@@ -1,4 +1,34 @@
-# PDF Link Map v0.1.0 handoff
+# PDF Link Map verification handoff — FAIL
+
+Work order: `pdf-link-map-verify-1`
+Verified candidate: `a20cc8ad8bc18067cd68237f25bf399553e8fc9d`
+Live URL: `https://pdf-link-map.sociobot.in/`
+
+## Verification outcome
+
+**FAIL — do not release the current public deployment.** Independent verification passed all clean-install, test, build, Rust format/Clippy, package, clean-consumer CLI, report, desktop/mobile keyboard, axe, privacy, bundle, and candidate-identity checks. The deployed index, JS, CSS, and hero assets exactly match the candidate.
+
+Two high-severity live failures remain:
+
+- The public $29 Team checkout points to `pilot-api.sociobot.in` and returns HTTP 404. The production endpoint also returns 404, so the advertised unlock cannot be purchased.
+- A fresh live browser never automatically registers the service worker (`getRegistrations() === []` after five seconds; `navigator.serviceWorker.ready` timed out after 15 seconds). First-visit offline reload and update behavior therefore fail on the public URL, despite the local browser test passing.
+
+There is also no enforcing CSP/frame-ancestors or X-Frame-Options on the live response, and its HSTS lifetime is only 126 days. See `.factory/verification.md` for exact commands, results, metrics, and remediation.
+
+## How to re-verify
+
+```sh
+npm ci
+npm test
+npm run build
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo package -p pdf-link-map
+```
+
+After deploying the production billing configuration, run the package in a clean consumer with `cargo install --path target/package/pdf-link-map-0.1.0 --root <empty-prefix>`, exercise its CLI against valid/broken/malformed PDF and manifest cases, then test the live URL for checkout redirect, service-worker registration/update/offline reload, headers, and mobile/desktop accessibility.
+
+## Prior builder handoff (superseded by verification status above)
 
 Work order: `pdf-link-map-build-1`
 Completed: 2026-08-28
