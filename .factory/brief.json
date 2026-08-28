@@ -1,0 +1,11 @@
+{
+  "slug": "pdf-link-map",
+  "title": "PDF Link Map",
+  "territory": "utilities",
+  "user": "Operations and technical-document teams converting HTML or DOCX to PDF who need to know whether navigation survives the conversion.",
+  "smallest_useful_product": "A CLI that accepts a PDF plus optional heading manifest, inventories internal/external annotations, validates destinations and duplicate anchors, and writes a clickable HTML map.",
+  "success_measure": "Detect every deliberately broken TOC/list link in a fixture suite and make the command suitable for a release pipeline.",
+  "artifact_class": "cli",
+  "monetization": "one-time",
+  "constraints": ["Never dereference external links by default", "Parse malformed PDFs defensively", "Do not modify signed documents"]
+}

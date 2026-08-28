@@ -1,14 +1,81 @@
 # PDF Link Map
 
-Live: https://pdf-link-map.sociobot.in — built by the Param Factory (`cli`).
+PDF Link Map is a local-first command-line checker for operations and technical-document teams. It inventories internal and external PDF link annotations, resolves named and explicit destinations, spots broken links and duplicate destination names, optionally compares destinations with a heading manifest, and writes a self-contained clickable HTML report.
 
-See `.factory/brief.json` for the researched problem this solves and `.factory/design.md` for the visual system.
+It never opens external URLs and never modifies the input PDF—including signed files.
 
-## Develop
+## Install
 
+Download a release binary, or build it with a current Rust toolchain:
+
+```sh
+cargo install --path crates/pdf-link-map
+pdf-link-map --help
 ```
-npm install
-npm run dev
+
+## Usage
+
+Audit a PDF and create a report next to it:
+
+```sh
+pdf-link-map handbook.pdf
+```
+
+Choose the report path and emit machine-readable findings to stdout:
+
+```sh
+pdf-link-map handbook.pdf --output audit/link-map.html --json
+```
+
+Compare named destinations with the headings you expected the converter to preserve:
+
+```sh
+pdf-link-map handbook.pdf --manifest headings.json --fail-on broken
+```
+
+The manifest is a JSON array. `anchor` is optional; when present it must match a named PDF destination.
+
+```json
+[
+  { "title": "Installation", "anchor": "install", "page": 3 },
+  { "title": "Troubleshooting", "anchor": "troubleshooting" }
+]
+```
+
+Exit codes are stable: `0` completed (even with findings unless a threshold is requested), `1` the chosen `--fail-on` policy failed, and `2` input/configuration or PDF parsing failed. `--json` writes only JSON to stdout; human progress goes to stderr.
+
+## What it validates
+
+- URI annotations (recorded but never dereferenced)
+- explicit page destinations and named destinations
+- missing pages, missing named destinations, malformed actions, and duplicate destination names
+- optional manifest anchors and expected pages
+- empty PDFs and PDFs with no links, with actionable output rather than a crash
+
+Encrypted PDFs are reported as unsupported in v1. The parser is defensive but intentionally does not repair malformed files.
+
+## Develop and verify
+
+Requirements: Rust 1.85+, Node.js 20+, npm 10+.
+
+```sh
+npm ci
 npm test
-npm run build   # -> dist/
+npm run build
 ```
+
+`npm test` runs the Rust unit/integration suite and site tests. `npm run build` creates the static deployment in `dist/site/` and a release CLI binary under `target/release/`. To preview the site: `npm run dev`.
+
+Create a publishable source package without publishing it:
+
+```sh
+cargo package -p pdf-link-map
+```
+
+## Privacy and licensing
+
+PDF analysis is entirely local and there is no telemetry. The website stores a license token and a once-daily verification result only after a customer restores or buys the optional one-time Team workflow unlock. See the site's privacy and terms pages.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
