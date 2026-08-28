@@ -1,0 +1,13 @@
+import { createServer } from 'node:http';
+import { readFile, stat } from 'node:fs/promises';
+import { extname, join, normalize } from 'node:path';
+const root = new URL('../../dist/site/', import.meta.url).pathname;
+const types = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.svg':'image/svg+xml', '.webp':'image/webp' };
+createServer(async (req, res) => {
+  try {
+    let path = normalize(decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname)).replace(/^\/+/, '');
+    if (!path || path.endsWith('/')) path += 'index.html';
+    let file = join(root, path); if (!(await stat(file)).isFile()) file = join(root, 'index.html');
+    res.setHeader('content-type', types[extname(file)] ?? 'application/octet-stream'); res.end(await readFile(file));
+  } catch { res.statusCode = 404; res.end('Not found'); }
+}).listen(4178, '127.0.0.1');

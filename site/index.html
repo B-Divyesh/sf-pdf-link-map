@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Audit internal and external PDF links locally, validate destinations, and create a clickable HTML map.">
+    <meta name="theme-color" content="#f4eedb">
+    <title>PDF Link Map — navigation QA for converted PDFs</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="PDF Link Map home"><span aria-hidden="true">↳</span> PDF Link Map</a>
+      <nav aria-label="Primary navigation">
+        <a href="#how">How it works</a>
+        <a href="#demo">Specimen</a>
+        <a href="#pricing">Team unlock</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="kicker"><span class="pin" aria-hidden="true"></span> PDF navigation field notes / v0.1</p>
+          <h1 id="hero-title">Find the links your PDF converter quietly broke.</h1>
+          <p class="lead">One local command inventories every link annotation, checks where it lands, and leaves a clickable map for reviewers and CI.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#install">Install the CLI</a>
+            <a class="button secondary" href="#demo">Open specimen</a>
+          </div>
+          <p class="privacy-note"><strong>Local by design.</strong> Your PDF never leaves your machine. External addresses are listed, never opened.</p>
+        </div>
+        <figure class="hero-figure">
+          <img src="/link-map-notebook.webp" srcset="/link-map-notebook-640.webp 640w, /link-map-notebook.webp 960w" sizes="(max-width: 800px) calc(100vw - 32px), 46vw" width="960" height="640" fetchpriority="high" alt="Illustrated lab notebook with document pages, linked blue nodes, green checks, and one route circled in red pencil">
+          <figcaption>Trace every route before the handoff.</figcaption>
+        </figure>
+      </section>
+
+      <section class="proof-strip" aria-label="Product capabilities">
+        <p><strong>Internal</strong> named + explicit destinations</p>
+        <p><strong>External</strong> recorded, never fetched</p>
+        <p><strong>Output</strong> HTML + JSON + exit codes</p>
+      </section>
+
+      <section id="how" class="section ruled" aria-labelledby="how-title">
+        <div class="section-heading">
+          <p class="eyebrow">Method 01</p>
+          <h2 id="how-title">Make navigation a release artifact</h2>
+          <p>Run the same audit after LibreOffice, Chromium, wkhtmltopdf, or any other converter. The checker reads the finished PDF—not the tool that made it.</p>
+        </div>
+        <ol class="method-list">
+          <li><span>1</span><div><h3>Inspect annotations</h3><p>Inventory GoTo and URI actions without rendering pages or contacting the network.</p></div></li>
+          <li><span>2</span><div><h3>Resolve destinations</h3><p>Follow explicit pages and PDF name trees. Flag missing pages, anchors, and duplicates.</p></div></li>
+          <li><span>3</span><div><h3>Leave evidence</h3><p>Open the standalone HTML map for review, or consume JSON and stable exit codes in CI.</p></div></li>
+        </ol>
+      </section>
+
+      <section id="install" class="section install-section" aria-labelledby="install-title">
+        <div>
+          <p class="eyebrow">Field command</p>
+          <h2 id="install-title">A single binary. No account.</h2>
+          <p>Build from source today. Release binaries can be attached without changing the command or report schema.</p>
+        </div>
+        <div class="code-notes">
+          <div class="code-block">
+            <span class="code-label">Install</span>
+            <pre><code>cargo install --git https://github.com/B-Divyesh/sf-pdf-link-map</code></pre>
+            <button class="copy-button" type="button" data-copy="cargo install --git https://github.com/B-Divyesh/sf-pdf-link-map">Copy install command</button>
+          </div>
+          <div class="code-block">
+            <span class="code-label">Audit + fail CI on broken links</span>
+            <pre><code>pdf-link-map handbook.pdf \
+  --manifest headings.json \
+  --fail-on broken --json</code></pre>
+            <button class="copy-button" type="button" data-copy="pdf-link-map handbook.pdf --manifest headings.json --fail-on broken --json">Copy audit command</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="demo" class="section demo-section" aria-labelledby="demo-title">
+        <div class="section-heading">
+          <p class="eyebrow">Pinned specimen</p>
+          <h2 id="demo-title">Read a link map before you make one</h2>
+          <p>This browser specimen uses bundled, non-sensitive sample results. Actual PDFs are inspected only by the local CLI.</p>
+        </div>
+        <div class="specimen-tabs" role="group" aria-label="Choose specimen state">
+          <button type="button" class="specimen-choice is-active" data-specimen="broken" aria-pressed="true">Broken conversion</button>
+          <button type="button" class="specimen-choice" data-specimen="clean" aria-pressed="false">Repaired conversion</button>
+          <button type="button" class="specimen-choice" data-specimen="empty" aria-pressed="false">No annotations</button>
+        </div>
+        <div class="report-sheet" aria-live="polite" aria-atomic="true">
+          <div class="report-head">
+            <div><span class="file-tab">operations-handbook.pdf</span><h3 id="specimen-heading">2 routes need attention</h3></div>
+            <span id="specimen-stamp" class="stamp fail">FAIL</span>
+          </div>
+          <div id="specimen-metrics" class="report-metrics"></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable specimen results">
+            <table>
+              <caption class="sr-only">Link annotation results for sample PDF</caption>
+              <thead><tr><th>From</th><th>Destination</th><th>Result</th></tr></thead>
+              <tbody id="specimen-rows"></tbody>
+            </table>
+          </div>
+          <p id="specimen-note" class="margin-note"></p>
+        </div>
+      </section>
+
+      <section id="pricing" class="section pricing-section" aria-labelledby="pricing-title">
+        <div class="price-copy">
+          <p class="eyebrow">Team notebook</p>
+          <h2 id="pricing-title">Keep the checker free. Unlock the rollout kit.</h2>
+          <p>The free CLI always includes complete audits, HTML and JSON export, manifests, and failure thresholds. A one-time Team unlock adds a guided CI policy builder and maintained release-pipeline recipes for documentation teams.</p>
+          <p class="legal-note">Sociobot/Dodo is the merchant of record. Refunds are handled there and revoke the license automatically. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
+        </div>
+        <aside class="price-note" aria-label="Team unlock offer">
+          <p class="price"><span>$</span>29 <small>one time</small></p>
+          <ul>
+            <li>GitHub Actions and generic CI recipes</li>
+            <li>Manifest policy worksheet</li>
+            <li>Future Team notebook updates</li>
+          </ul>
+          <a class="button primary full" href="https://api.sociobot.in/api/v1/products/pdf-link-map/checkout">Buy Team unlock</a>
+          <details id="restore-panel">
+            <summary>Have a license? Restore it</summary>
+            <form id="license-form">
+              <label for="license-token">License token</label>
+              <div class="field-row"><input id="license-token" name="license" type="password" autocomplete="off" required><button type="submit">Verify</button></div>
+            </form>
+          </details>
+          <p id="license-status" class="license-status" role="status">Free tools ready.</p>
+        </aside>
+      </section>
+
+      <section id="team-kit" class="section team-kit" hidden aria-labelledby="team-title">
+        <p class="eyebrow">Unlocked field sheet</p>
+        <h2 id="team-title">Build your CI checkpoint</h2>
+        <div class="policy-builder">
+          <label for="ci-provider">Pipeline</label>
+          <select id="ci-provider"><option value="github">GitHub Actions</option><option value="generic">Generic shell CI</option></select>
+          <label for="pdf-path">PDF artifact path</label>
+          <input id="pdf-path" value="dist/handbook.pdf">
+          <label for="manifest-path">Heading manifest (optional)</label>
+          <input id="manifest-path" value="docs/headings.json">
+          <button type="button" id="generate-policy">Generate recipe</button>
+          <pre class="policy-output"><code id="policy-output">Choose your inputs, then generate a recipe.</code></pre>
+        </div>
+      </section>
+
+      <section class="section final-note" aria-label="Call to action">
+        <p class="hand-note">A visible contents page is not proof of working navigation.</p>
+        <h2>Test the handoff, not the hope.</h2>
+        <a class="button primary" href="#install">Install PDF Link Map</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p><strong>PDF Link Map</strong> · local navigation QA</p>
+      <nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-pdf-link-map">Source</a></nav>
+      <p id="network-state" class="network-state">Works offline after first visit.</p>
+    </footer>
+  </body>
+</html>
