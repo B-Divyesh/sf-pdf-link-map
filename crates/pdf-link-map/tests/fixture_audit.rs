@@ -170,3 +170,19 @@ fn no_annotation_pdf_has_an_actionable_empty_state() {
             .any(|finding| finding.code == "no_links")
     );
 }
+
+#[test]
+fn refuses_to_overwrite_the_source_pdf() {
+    let dir = tempfile::tempdir().unwrap();
+    let pdf = dir.path().join("signed.pdf");
+    fixture(&pdf);
+    let before = fs::read(&pdf).unwrap();
+    let result = Command::new(env!("CARGO_BIN_EXE_pdf-link-map"))
+        .arg(&pdf)
+        .args(["--output"])
+        .arg(&pdf)
+        .output()
+        .unwrap();
+    assert_eq!(result.status.code(), Some(2));
+    assert_eq!(fs::read(&pdf).unwrap(), before);
+}

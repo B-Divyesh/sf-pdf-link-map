@@ -71,7 +71,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(button => bu
 }));
 
 const slug = 'pdf-link-map';
-const apiBase = (import.meta.env.VITE_BILLING_API_BASE as string | undefined) ?? 'https://api.sociobot.in';
+const apiBase = (import.meta.env.VITE_BILLING_API_BASE as string | undefined) ?? 'https://pilot-api.sociobot.in';
 const licenseKey = `sb_license:${slug}`;
 const verdictKey = `sb_license_verdict:${slug}`;
 const day = 86_400_000;

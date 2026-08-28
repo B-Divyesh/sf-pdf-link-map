@@ -11,7 +11,7 @@ test('build has deploy entry and legal routes', async () => {
 });
 test('landing markup has required semantics and billing contract', async () => {
   const html = await readFile(join(dist, 'index.html'), 'utf8');
-  assert.match(html, /<html lang="en">/); assert.equal((html.match(/<h1/g) ?? []).length, 1); assert.match(html, /<main/); assert.match(html, /api\.sociobot\.in\/api\/v1\/products\/pdf-link-map\/checkout/); assert.match(html, /alt="Illustrated lab notebook/);
+  assert.match(html, /<html lang="en">/); assert.equal((html.match(/<h1/g) ?? []).length, 1); assert.match(html, /<main/); assert.match(html, /pilot-api\.sociobot\.in\/api\/v1\/products\/pdf-link-map\/checkout/); assert.match(html, /alt="Illustrated lab notebook/);
 });
 test('asset budgets are respected', async () => {
   const assets = await import('node:fs/promises').then(fs => fs.readdir(join(dist, 'assets')));

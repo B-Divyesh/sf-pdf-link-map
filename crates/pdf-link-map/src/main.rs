@@ -40,6 +40,12 @@ fn main() -> ExitCode {
     let output = args
         .output
         .unwrap_or_else(|| default_output_path(&args.input));
+    if output.exists()
+        && std::fs::canonicalize(&output).ok() == std::fs::canonicalize(&args.input).ok()
+    {
+        eprintln!("pdf-link-map: report path must not overwrite the input PDF");
+        return ExitCode::from(2);
+    }
     let report = match audit_pdf(&args.input, args.manifest.as_deref()) {
         Ok(v) => v,
         Err(e) => {
