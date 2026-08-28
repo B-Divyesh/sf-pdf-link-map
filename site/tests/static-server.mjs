@@ -6,6 +6,9 @@ const types = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css',
 createServer(async (req, res) => {
   try {
     let path = normalize(decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname)).replace(/^\/+/, '');
+    // Azure Static Web Apps reads this deployment-control file but does not
+    // expose it. Match that behavior so PWA precache regressions are local.
+    if (path === 'staticwebapp.config.json') { res.statusCode = 404; res.end('Not found'); return; }
     if (!path || path.endsWith('/')) path += 'index.html';
     let file = join(root, path); if (!(await stat(file)).isFile()) file = join(root, 'index.html');
     res.setHeader('content-type', types[extname(file)] ?? 'application/octet-stream'); res.end(await readFile(file));

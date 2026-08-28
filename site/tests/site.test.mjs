@@ -8,6 +8,7 @@ test('build has deploy entry and legal routes', async () => {
   for (const path of ['index.html', 'privacy/index.html', 'terms/index.html', 'sw.js', 'staticwebapp.config.json']) assert.ok((await stat(join(dist, path))).isFile(), path);
   const serviceWorker = await readFile(join(dist, 'sw.js'), 'utf8');
   assert.match(serviceWorker, /\/assets\/main-[A-Za-z0-9_-]+\.js/);
+  assert.doesNotMatch(serviceWorker, /staticwebapp\.config\.json/);
 });
 test('landing markup has required semantics and production billing contract', async () => {
   const html = await readFile(join(dist, 'index.html'), 'utf8');
