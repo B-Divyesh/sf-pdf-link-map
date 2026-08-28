@@ -71,7 +71,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(button => bu
 }));
 
 const slug = 'pdf-link-map';
-const apiBase = (import.meta.env.VITE_BILLING_API_BASE as string | undefined) ?? 'https://pilot-api.sociobot.in';
+const apiBase = (import.meta.env.VITE_BILLING_API_BASE as string | undefined) ?? 'https://api.sociobot.in';
 const licenseKey = `sb_license:${slug}`;
 const verdictKey = `sb_license_verdict:${slug}`;
 const day = 86_400_000;
@@ -118,6 +118,16 @@ document.querySelector<HTMLButtonElement>('#generate-policy')?.addEventListener(
   const output = document.querySelector<HTMLElement>('#policy-output'); if (output) output.textContent = recipe;
 });
 
-function showNetworkState(): void { const target = document.querySelector<HTMLElement>('#network-state'); if (target) target.textContent = navigator.onLine ? 'Works offline after first visit.' : 'Offline — docs and specimen remain available.'; }
+function showNetworkState(message?: string): void {
+  const target = document.querySelector<HTMLElement>('#network-state');
+  if (target) target.textContent = message ?? (navigator.onLine ? 'Works offline after first visit.' : 'Offline — docs and specimen remain available.');
+}
 window.addEventListener('online', showNetworkState); window.addEventListener('offline', showNetworkState); showNetworkState();
-if ('serviceWorker' in navigator && import.meta.env.PROD) window.addEventListener('load', () => { void navigator.serviceWorker.register('/sw.js'); });
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  // A module can run after `load` when restored from the back/forward cache or
+  // injected by a host. Register now instead of waiting for an event we may have
+  // missed; registration itself is safe to repeat on every visit.
+  void navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {
+    showNetworkState('Offline cache could not start. The docs are still available online.');
+  });
+}

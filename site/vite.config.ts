@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [{
     name: 'billing-base',
     transformIndexHtml(html) {
-      return html.replaceAll('__BILLING_API_BASE__', process.env.VITE_BILLING_API_BASE ?? 'https://pilot-api.sociobot.in');
+      return html.replaceAll('__BILLING_API_BASE__', process.env.VITE_BILLING_API_BASE ?? 'https://api.sociobot.in');
     }
   }],
   build: {
