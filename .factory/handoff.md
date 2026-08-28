@@ -1,21 +1,24 @@
-# PDF Link Map verification handoff — FAIL
+# PDF Link Map repair handoff
 
-Work order: `pdf-link-map-verify-1`
-Verified candidate: `a20cc8ad8bc18067cd68237f25bf399553e8fc9d`
-Live URL: `https://pdf-link-map.sociobot.in/`
+Work order: `pdf-link-map-repair-1`
+Base verifier report: `166fde02bb645f939d5c1ec6dbe602afca0ad139` for candidate `a20cc8ad8bc18067cd68237f25bf399553e8fc9d`
+Repair commits: `e37c737` and `897f635`
+Deployment: `https://pdf-link-map.sociobot.in/` (Azure Static Web Apps deployment `210a2bd1-240f-4154-8131-324469d1c808`)
 
-## Verification outcome
+## Outcome
 
-**FAIL — do not release the current public deployment.** Independent verification passed all clean-install, test, build, Rust format/Clippy, package, clean-consumer CLI, report, desktop/mobile keyboard, axe, privacy, bundle, and candidate-identity checks. The deployed index, JS, CSS, and hero assets exactly match the candidate.
+The service-worker and response-policy release blockers are repaired and live.
 
-Two high-severity live failures remain:
+- Production builds now use `https://api.sociobot.in` for checkout and license verification, never the pilot host.
+- Worker registration happens immediately instead of waiting for a possibly missed `load` event.
+- The actual production-only failure was also fixed: generated precache input no longer includes `staticwebapp.config.json`. Azure consumes that deployment file and returns 404 for it; including it made `cache.addAll()` reject and removed the registration. The local static test server now returns the same 404, and the fresh-visit PWA test would fail if it regressed.
+- Static hosting now sends an enforcing CSP (`frame-ancestors 'none'`), `X-Frame-Options: DENY`, and `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`.
 
-- The public $29 Team checkout points to `pilot-api.sociobot.in` and returns HTTP 404. The production endpoint also returns 404, so the advertised unlock cannot be purchased.
-- A fresh live browser never automatically registers the service worker (`getRegistrations() === []` after five seconds; `navigator.serviceWorker.ready` timed out after 15 seconds). First-visit offline reload and update behavior therefore fail on the public URL, despite the local browser test passing.
+The production billing product is still not registered: on 2026-08-28, `HEAD https://api.sociobot.in/api/v1/products/pdf-link-map/checkout` returned `404`. The public link is now the correct required production URL, but a valid redirect cannot be created from this repository. The product-registration operation belongs to the factory billing system and was not performed because repository workers must not change billing. Do not claim the paid Team checkout is release-ready until the factory registers `pdf-link-map` and a real checkout/return-token smoke test passes.
 
-There is also no enforcing CSP/frame-ancestors or X-Frame-Options on the live response, and its HSTS lifetime is only 126 days. See `.factory/verification.md` for exact commands, results, metrics, and remediation.
+## Verification
 
-## How to re-verify
+Fresh dependencies and complete local gates passed:
 
 ```sh
 npm ci
@@ -23,58 +26,44 @@ npm test
 npm run build
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
-cargo package -p pdf-link-map
+cargo package -p pdf-link-map --allow-dirty
 ```
 
-After deploying the production billing configuration, run the package in a clean consumer with `cargo install --path target/package/pdf-link-map-0.1.0 --root <empty-prefix>`, exercise its CLI against valid/broken/malformed PDF and manifest cases, then test the live URL for checkout redirect, service-worker registration/update/offline reload, headers, and mobile/desktop accessibility.
+Results:
 
-## Prior builder handoff (superseded by verification status above)
+- `npm test`: 2 Rust unit tests, 5 Rust integration tests, 1 doctest, 5 static-site/build tests, and Playwright passed.
+- `npm run build`: produced `target/release/pdf-link-map` and `dist/site/`; built JS is 5.60 KB and CSS is 11.71 KB.
+- `cargo package`: packaged and verified `pdf-link-map-0.1.0` (8 files, 69.4 KiB source package).
+- Clean consumer installation passed with `CARGO_TARGET_DIR=/work/repo/target cargo install --path target/package/pdf-link-map-0.1.0 --root <empty-prefix>`; the installed `pdf-link-map --help` exposes the documented single binary, JSON option, policy options, and exit behavior.
+- Factory `verify-url.sh` on the live URL passed: HTTP 200, title, `lang=en`, one `h1`, `main`, zero images missing `alt`, zero unlabeled buttons, and zero console errors (833 ms navigation in the check).
+- Fresh live Playwright at 390 × 844 and 1440 × 900 passed: keyboard Space selects the specimen state, mobile and desktop axe had 0 serious/critical violations, normal free visit made 0 cross-origin requests, and there were 0 page/console errors.
+- Fresh live worker check returned an active registration and `navigator.serviceWorker.ready` scope `https://pdf-link-map.sociobot.in/`; with the context offline, reload still rendered the `h1` and `navigator.serviceWorker.controller` was true.
+- Live headers include CSP, `X-Frame-Options: DENY`, HSTS max-age 63072000, `nosniff`, strict-origin referrer policy, and restrictive camera/microphone/geolocation permissions.
+- Lighthouse 12.8.2 mobile report: Performance 99, Accessibility 100, Best Practices 100, SEO 100; FCP 1.1 s, LCP 1.2 s, TBT 120 ms, CLS 0. The runner wrote its report but exited non-zero after Chromium's known final full-page screenshot target crash; independent Playwright console, accessibility, desktop/mobile, and PWA checks above passed.
 
-Work order: `pdf-link-map-build-1`
-Completed: 2026-08-28
+## Regression coverage added
 
-## What shipped
+- Built output must contain the production checkout host and not the pilot host.
+- Deployment configuration must contain the CSP/frame policy, XFO, production API allowlist, and long HSTS value.
+- Built main bundle must call worker registration immediately, not from a `load` handler.
+- PWA precache must not contain `staticwebapp.config.json`; the test host deliberately returns 404 for it, matching Azure Static Web Apps.
+- Browser coverage now verifies a fresh automatic registration before interaction, worker readiness, offline reload, keyboard operation, mobile axe, and desktop axe.
 
-- A Rust/clap single-binary CLI that reads a PDF without changing it, inventories link annotations, records external URIs without requesting them, resolves explicit and named internal destinations, walks PDF destination name trees defensively, identifies invalid and duplicate destinations, and compares an optional JSON heading manifest.
-- Standalone clickable HTML reports, complete `--json` output, and stable exits: 0 for a completed audit, 1 when the selected `--fail-on broken|any` policy fails, and 2 for input/configuration/parser failures.
-- Explicit protection against using the input PDF as the report output, including symlink/canonical-path equality. Encrypted PDFs fail with an actionable message rather than being modified or guessed at.
-- Fixture coverage for valid, external, missing-anchor, duplicate-anchor, manifest-missing, malformed-input, no-annotation, CI-policy, and source-overwrite behavior.
-- A Vite static documentation site at `dist/site/` with the handwritten lab-notebook system, responsive 390 px layout, keyboard interactions, bundled three-state specimen, installation/CI guidance, offline service worker, immutable asset caching, privacy and terms pages.
-- A $29 one-time Team notebook unlock. The free checker retains audits, thresholds, manifests, and all exports. Checkout and verification use the Sociobot contract; query-string licenses are stored locally and stripped, verdicts are cached for one day, cached valid licenses unlock optimistically offline, invalid licenses relock quietly, and paste-to-restore is included. Staging defaults to `https://pilot-api.sociobot.in`; release should build with `VITE_BILLING_API_BASE=https://api.sociobot.in` after product registration.
-
-## Commands
+## How to run and deploy
 
 ```sh
 npm ci
 npm test
 npm run build
+/opt/fleet/lib/deploy-static.sh pdf-link-map dist/site
+```
+
+To prepare the CLI for registry publication (do not publish from this worker):
+
+```sh
 cargo package -p pdf-link-map
 ```
 
-`npm run build` is the reproducible work-order build command. It produces the deployable site with `index.html` at `dist/site/` and the optimized 2.3 MB CLI at `target/release/pdf-link-map`. `cargo package` produced and verified the publishable `pdf-link-map-0.1.0.crate`; nothing was published.
+## Remaining factory action
 
-## Verification performed
-
-- `npm test`: passed. Rust: 2 library tests, 5 fixture/CLI integration tests, and 1 compiling doctest. Site: 3 static/build budget checks plus Playwright mobile interaction, cached-license, offline reload, legal-route, console, and axe checks.
-- `npm run build`: passed; `dist/site/index.html` present.
-- `cargo clippy --workspace --all-targets -- -D warnings`: passed.
-- `cargo fmt --all -- --check`: passed.
-- `cargo package -p pdf-link-map --allow-dirty`: packaged and verified.
-- `npm audit --audit-level=high`: 0 vulnerabilities.
-- Playwright axe: 0 serious or critical violations at 390 × 844; browser console: 0 errors.
-- Factory `verify-url.sh`: HTTP 200, title/lang/main present, one h1, 0 missing alt attributes, 0 unlabeled buttons, and 0 console errors.
-- Lighthouse 12.8.2 mobile against the final production build: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 1.5 s, TBT 160 ms (INP proxy), CLS 0.
-- Initial payload: 5.54 KB main JS, 11.71 KB CSS, 29 KB 640 px hero / 62 KB 960 px hero, and no downloaded fonts. All are below the specified budgets.
-
-## Original asset provenance
-
-The original hero was generated with the factory CLI `/opt/fleet/lib/gen-image.sh` using the `factory-image` deployment, then visually inspected and optimized to responsive WebP. Source and prompt metadata: `site/src/assets/provenance/link-map-notebook.png` and `.png.json`; shipped files: `site/public/link-map-notebook-640.webp` and `site/public/link-map-notebook.webp`.
-
-Final prompt: “Use case: illustration-story. Asset type: wide landing-page hero for a technical CLI. Primary request: a tactile top-down editorial illustration of an engineer's lab notebook used to audit navigation in a PDF. Scene: warm ivory ruled notebook paper on a quiet workbench; a clipped stack of generic printed document pages with tiny abstract line marks, several blue link nodes connected by a hand-drawn route, one broken route circled in rust-red pencil, small green verification ticks, brass binder clip, red drafting pencil. Style: refined analog gouache and colored-pencil illustration, subtle paper grain, observant and credible rather than whimsical. Composition: 3:2 landscape, the document and route centered, ample breathing room, strong readable silhouette at small size. Palette: warm paper, graphite navy, muted blueprint blue, rust red, moss green. Lighting: soft window light, calm quality-control mood. Constraints: no people, no device screen, no logos, no legible words, no letters, no watermark, no generic gradient, no photorealism.”
-
-## Known gaps and next steps
-
-- Encrypted PDFs require a decrypted audit copy. Remote GoToR, Launch, JavaScript, and other uncommon action types are inventoried as review warnings rather than followed.
-- PDF annotations do not reliably retain their visible source text, so the v1 map identifies links by page/order and rectangle. The heading manifest validates destination-side expectations.
-- The browser specimen is intentionally bundled sample data, not a PDF parser; real document analysis remains in the local CLI.
-- The factory must register the staging and production products, switch the release billing base, attach built binaries for supported platforms, and smoke-test a real checkout/return token. No infrastructure, DNS, billing registration, or publishing was changed here.
+Register the production paid product named `pdf-link-map` in the Sociobot billing engine, then verify that its checkout endpoint redirects and a returned `?license=` token stores, verifies, unlocks, restores, and revokes correctly. This is the only remaining verifier finding; it requires billing authority outside this repository.
