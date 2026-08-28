@@ -72,9 +72,9 @@ Create a publishable source package without publishing it:
 cargo package -p pdf-link-map
 ```
 
-## Privacy and licensing
+## Privacy
 
-PDF analysis is entirely local and there is no telemetry. The website stores a license token and a once-daily verification result only after a customer restores or buys the optional one-time Team workflow unlock. See the site's privacy and terms pages.
+PDF analysis is entirely local and there is no telemetry. The website has no accounts, checkout, or license storage while the optional Team rollout kit is unavailable. See the site's privacy and terms pages.
 
 ## License
 

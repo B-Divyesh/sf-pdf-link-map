@@ -16,7 +16,7 @@
       <nav aria-label="Primary navigation">
         <a href="#how">How it works</a>
         <a href="#demo">Specimen</a>
-        <a href="#pricing">Team unlock</a>
+        <a href="#team-status">Team status</a>
       </nav>
     </header>
 
@@ -66,12 +66,12 @@
         <div class="code-notes">
           <div class="code-block">
             <span class="code-label">Install</span>
-            <pre><code>cargo install --git https://github.com/B-Divyesh/sf-pdf-link-map</code></pre>
+            <pre tabindex="0" aria-label="Install command; scroll horizontally to read the complete command"><code>cargo install --git https://github.com/B-Divyesh/sf-pdf-link-map</code></pre>
             <button class="copy-button" type="button" data-copy="cargo install --git https://github.com/B-Divyesh/sf-pdf-link-map">Copy install command</button>
           </div>
           <div class="code-block">
             <span class="code-label">Audit + fail CI on broken links</span>
-            <pre><code>pdf-link-map handbook.pdf \
+            <pre tabindex="0" aria-label="Audit command"><code>pdf-link-map handbook.pdf \
   --manifest headings.json \
   --fail-on broken --json</code></pre>
             <button class="copy-button" type="button" data-copy="pdf-link-map handbook.pdf --manifest headings.json --fail-on broken --json">Copy audit command</button>
@@ -107,45 +107,18 @@
         </div>
       </section>
 
-      <section id="pricing" class="section pricing-section" aria-labelledby="pricing-title">
+      <section id="team-status" class="section pricing-section" aria-labelledby="team-status-title">
         <div class="price-copy">
           <p class="eyebrow">Team notebook</p>
-          <h2 id="pricing-title">Keep the checker free. Unlock the rollout kit.</h2>
-          <p>The free CLI always includes complete audits, HTML and JSON export, manifests, and failure thresholds. A one-time Team unlock adds a guided CI policy builder and maintained release-pipeline recipes for documentation teams.</p>
-          <p class="legal-note">Sociobot/Dodo is the merchant of record. Refunds are handled there and revoke the license automatically. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
+          <h2 id="team-status-title">Keep the checker free, complete, and local.</h2>
+          <p>The CLI includes complete audits, HTML and JSON export, manifests, and failure thresholds. There is no account, checkout, or license required to use the release workflow.</p>
+          <p class="legal-note"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
         </div>
-        <aside class="price-note" aria-label="Team unlock offer">
-          <p class="price"><span>$</span>29 <small>one time</small></p>
-          <ul>
-            <li>GitHub Actions and generic CI recipes</li>
-            <li>Manifest policy worksheet</li>
-            <li>Future Team notebook updates</li>
-          </ul>
-          <a class="button primary full" href="__BILLING_API_BASE__/api/v1/products/pdf-link-map/checkout">Buy Team unlock</a>
-          <details id="restore-panel">
-            <summary>Have a license? Restore it</summary>
-            <form id="license-form">
-              <label for="license-token">License token</label>
-              <div class="field-row"><input id="license-token" name="license" type="password" autocomplete="off" required><button type="submit" aria-label="Verify license">Verify</button></div>
-            </form>
-          </details>
-          <p id="license-status" class="license-status" role="status">Free tools ready.</p>
+        <aside class="availability-note" aria-label="Team rollout kit status">
+          <p class="eyebrow">Availability</p>
+          <h3>Team rollout kit is being prepared.</h3>
+          <p>It is not for sale while its billing registration is incomplete. The free CLI remains the full document-link audit: no feature is withheld from its safety, export, or accessibility workflow.</p>
         </aside>
-      </section>
-
-      <section id="team-kit" class="section team-kit" hidden aria-labelledby="team-title">
-        <p class="eyebrow">Unlocked field sheet</p>
-        <h2 id="team-title">Build your CI checkpoint</h2>
-        <div class="policy-builder">
-          <label for="ci-provider">Pipeline</label>
-          <select id="ci-provider"><option value="github">GitHub Actions</option><option value="generic">Generic shell CI</option></select>
-          <label for="pdf-path">PDF artifact path</label>
-          <input id="pdf-path" value="dist/handbook.pdf">
-          <label for="manifest-path">Heading manifest (optional)</label>
-          <input id="manifest-path" value="docs/headings.json">
-          <button type="button" id="generate-policy">Generate recipe</button>
-          <pre class="policy-output"><code id="policy-output">Choose your inputs, then generate a recipe.</code></pre>
-        </div>
       </section>
 
       <section class="section final-note" aria-label="Call to action">

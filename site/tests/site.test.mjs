@@ -10,16 +10,17 @@ test('build has deploy entry and legal routes', async () => {
   assert.match(serviceWorker, /\/assets\/main-[A-Za-z0-9_-]+\.js/);
   assert.doesNotMatch(serviceWorker, /staticwebapp\.config\.json/);
 });
-test('landing markup has required semantics and production billing contract', async () => {
+test('landing markup has required semantics and does not advertise an unavailable checkout', async () => {
   const html = await readFile(join(dist, 'index.html'), 'utf8');
-  assert.match(html, /<html lang="en">/); assert.equal((html.match(/<h1/g) ?? []).length, 1); assert.match(html, /<main/); assert.match(html, /https:\/\/api\.sociobot\.in\/api\/v1\/products\/pdf-link-map\/checkout/); assert.doesNotMatch(html, /pilot-api\.sociobot\.in/); assert.match(html, /alt="Illustrated lab notebook/);
+  assert.match(html, /<html lang="en">/); assert.equal((html.match(/<h1/g) ?? []).length, 1); assert.match(html, /<main/); assert.match(html, /Team rollout kit is being prepared/); assert.doesNotMatch(html, /\/checkout/); assert.doesNotMatch(html, /api\.sociobot\.in/); assert.match(html, /alt="Illustrated lab notebook/);
 });
 test('deployment configuration enforces browser isolation and transport policy', async () => {
   const config = JSON.parse(await readFile(join(dist, 'staticwebapp.config.json'), 'utf8'));
   const headers = config.globalHeaders;
   assert.match(headers['Content-Security-Policy'], /default-src 'self'/);
   assert.match(headers['Content-Security-Policy'], /frame-ancestors 'none'/);
-  assert.match(headers['Content-Security-Policy'], /connect-src 'self' https:\/\/api\.sociobot\.in/);
+  assert.match(headers['Content-Security-Policy'], /connect-src 'self'/);
+  assert.doesNotMatch(headers['Content-Security-Policy'], /api\.sociobot\.in/);
   assert.equal(headers['X-Frame-Options'], 'DENY');
   assert.match(headers['Strict-Transport-Security'], /max-age=63072000/);
 });
@@ -30,6 +31,7 @@ test('production bundle registers the worker immediately instead of waiting for 
   const source = await readFile(join(dist, 'assets', main), 'utf8');
   assert.match(source, /serviceWorker\.register\("\/sw\.js",\{scope:"\/"\}\)/);
   assert.doesNotMatch(source, /addEventListener\("load".*serviceWorker\.register/);
+  assert.doesNotMatch(source, /api\.sociobot\.in|\/checkout|localStorage|fetch\(/);
 });
 test('asset budgets are respected', async () => {
   const assets = await import('node:fs/promises').then(fs => fs.readdir(join(dist, 'assets')));

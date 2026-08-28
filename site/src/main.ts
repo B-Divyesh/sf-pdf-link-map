@@ -70,59 +70,11 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(button => bu
   window.setTimeout(() => { button.textContent = 'Copy command'; }, 1800);
 }));
 
-const slug = 'pdf-link-map';
-const apiBase = (import.meta.env.VITE_BILLING_API_BASE as string | undefined) ?? 'https://api.sociobot.in';
-const licenseKey = `sb_license:${slug}`;
-const verdictKey = `sb_license_verdict:${slug}`;
-const day = 86_400_000;
-type Verdict = { valid: boolean; checkedAt: number; reason?: string };
-
-function readVerdict(): Verdict | null {
-  try { return JSON.parse(localStorage.getItem(verdictKey) ?? 'null') as Verdict | null; } catch { return null; }
-}
-function setUnlocked(unlocked: boolean, message: string): void {
-  const kit = document.querySelector<HTMLElement>('#team-kit'); const status = document.querySelector<HTMLElement>('#license-status');
-  if (kit) kit.hidden = !unlocked; if (status) status.textContent = message;
-}
-async function verifyLicense(token: string, force = false): Promise<void> {
-  const cached = readVerdict();
-  if (cached?.valid) setUnlocked(true, navigator.onLine ? 'Team notebook unlocked.' : 'Team notebook unlocked from the last check; verification will resume online.');
-  else if (cached) setUnlocked(false, 'License no longer active. You can buy a new unlock above.');
-  if (!force && cached && Date.now() - cached.checkedAt < day) return;
-  if (!navigator.onLine) { if (!cached?.valid) setUnlocked(false, 'Offline. Connect once to verify this license.'); return; }
-  const status = document.querySelector<HTMLElement>('#license-status'); if (status) status.textContent = 'Checking license…';
-  try {
-    const response = await fetch(`${apiBase}/api/v1/products/${slug}/verify?license=${encodeURIComponent(token)}`);
-    if (!response.ok) throw new Error('verification unavailable');
-    const data = await response.json() as { valid: boolean; reason?: string };
-    const verdict = { valid: data.valid, checkedAt: Date.now(), reason: data.reason }; localStorage.setItem(verdictKey, JSON.stringify(verdict));
-    setUnlocked(data.valid, data.valid ? 'Team notebook unlocked.' : 'License no longer active. You can buy a new unlock above.');
-  } catch { setUnlocked(Boolean(cached?.valid), cached?.valid ? 'Verification unavailable; using the last valid check.' : 'Could not verify right now. Your free tools still work.'); }
-}
-
-const query = new URLSearchParams(location.search); const returnedLicense = query.get('license');
-if (returnedLicense) { localStorage.setItem(licenseKey, returnedLicense); query.delete('license'); history.replaceState({}, '', `${location.pathname}${query.size ? `?${query}` : ''}${location.hash}`); void verifyLicense(returnedLicense, true); }
-else { const stored = localStorage.getItem(licenseKey); if (stored) void verifyLicense(stored); }
-
-document.querySelector<HTMLFormElement>('#license-form')?.addEventListener('submit', event => {
-  event.preventDefault(); const input = document.querySelector<HTMLInputElement>('#license-token'); const token = input?.value.trim();
-  if (!token) return; localStorage.setItem(licenseKey, token); localStorage.removeItem(verdictKey); if (input) input.value = ''; void verifyLicense(token, true);
-});
-
-document.querySelector<HTMLButtonElement>('#generate-policy')?.addEventListener('click', () => {
-  const provider = document.querySelector<HTMLSelectElement>('#ci-provider')?.value ?? 'github';
-  const pdf = document.querySelector<HTMLInputElement>('#pdf-path')?.value.trim() || 'dist/handbook.pdf';
-  const manifest = document.querySelector<HTMLInputElement>('#manifest-path')?.value.trim();
-  const args = `pdf-link-map ${JSON.stringify(pdf)}${manifest ? ` --manifest ${JSON.stringify(manifest)}` : ''} --fail-on broken --json`;
-  const recipe = provider === 'github' ? `- name: Audit PDF navigation\n  run: ${args}` : `# PDF navigation release gate\n${args}`;
-  const output = document.querySelector<HTMLElement>('#policy-output'); if (output) output.textContent = recipe;
-});
-
 function showNetworkState(message?: string): void {
   const target = document.querySelector<HTMLElement>('#network-state');
   if (target) target.textContent = message ?? (navigator.onLine ? 'Works offline after first visit.' : 'Offline — docs and specimen remain available.');
 }
-window.addEventListener('online', showNetworkState); window.addEventListener('offline', showNetworkState); showNetworkState();
+window.addEventListener('online', () => showNetworkState()); window.addEventListener('offline', () => showNetworkState()); showNetworkState();
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   // A module can run after `load` when restored from the back/forward cache or
   // injected by a host. Register now instead of waiting for an event we may have
