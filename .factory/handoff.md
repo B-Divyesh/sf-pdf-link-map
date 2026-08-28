@@ -32,6 +32,7 @@ cargo package -p pdf-link-map
 - `cargo package -p pdf-link-map --allow-dirty`: packaged and verified.
 - `npm audit --audit-level=high`: 0 vulnerabilities.
 - Playwright axe: 0 serious or critical violations at 390 × 844; browser console: 0 errors.
+- Factory `verify-url.sh`: HTTP 200, title/lang/main present, one h1, 0 missing alt attributes, 0 unlabeled buttons, and 0 console errors.
 - Lighthouse 12.8.2 mobile against the final production build: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 1.5 s, TBT 160 ms (INP proxy), CLS 0.
 - Initial payload: 5.54 KB main JS, 11.71 KB CSS, 29 KB 640 px hero / 62 KB 960 px hero, and no downloaded fonts. All are below the specified budgets.
 
