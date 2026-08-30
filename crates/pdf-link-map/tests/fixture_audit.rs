@@ -16,7 +16,7 @@ fn uri(value: &str) -> Object {
     dictionary! { "Type" => "Annot", "Subtype" => "Link", "Rect" => vec![0.into(), 20.into(), 100.into(), 40.into()], "A" => dictionary! { "S" => "URI", "URI" => Object::string_literal(value) } }.into()
 }
 
-fn fixture(path: &std::path::Path) {
+fn fixture(path: &std::path::Path, include_explicit_destination: bool) {
     let mut doc = Document::with_version("1.7");
     let pages_id = doc.new_object_id();
     let page_one = doc.new_object_id();
@@ -25,13 +25,20 @@ fn fixture(path: &std::path::Path) {
     let content_two = doc.add_object(Stream::new(dictionary! {}, Vec::new()));
     let destination = Object::Array(vec![page_two.into(), name("Fit")]);
     let missing = text("missing-anchor");
+    let mut annotations = vec![
+        link(text("install")),
+        link(missing),
+        uri("https://example.test/docs"),
+    ];
+    if include_explicit_destination {
+        annotations.push(link(destination.clone()));
+    }
     doc.objects.insert(
         page_one,
         dictionary! {
             "Type" => "Page", "Parent" => pages_id,
             "MediaBox" => vec![0.into(), 0.into(), 612.into(), 792.into()],
-            "Resources" => dictionary! {}, "Contents" => content_one,
-            "Annots" => vec![link(text("install")), link(missing), uri("https://example.test/docs")]
+            "Resources" => dictionary! {}, "Contents" => content_one, "Annots" => annotations
         }
         .into(),
     );
@@ -86,7 +93,7 @@ fn fixture_without_links(path: &std::path::Path) {
 fn catches_every_deliberately_broken_fixture_link() {
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("converted.pdf");
-    fixture(&pdf);
+    fixture(&pdf, false);
     let manifest = dir.path().join("headings.json");
     fs::write(&manifest, r#"[{"title":"Install","anchor":"install","page":2},{"title":"Lost chapter","anchor":"lost"}]"#).unwrap();
     let report = audit_pdf(&pdf, Some(&manifest)).unwrap();
@@ -126,7 +133,7 @@ fn catches_every_deliberately_broken_fixture_link() {
 fn documented_json_ci_command_writes_report_and_fails_policy() {
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("handbook.pdf");
-    fixture(&pdf);
+    fixture(&pdf, false);
     let html = dir.path().join("audit/link-map.html");
     let result = Command::new(env!("CARGO_BIN_EXE_pdf-link-map"))
         .arg(&pdf)
@@ -175,7 +182,7 @@ fn no_annotation_pdf_has_an_actionable_empty_state() {
 fn refuses_to_overwrite_the_source_pdf() {
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("signed.pdf");
-    fixture(&pdf);
+    fixture(&pdf, false);
     let before = fs::read(&pdf).unwrap();
     let result = Command::new(env!("CARGO_BIN_EXE_pdf-link-map"))
         .arg(&pdf)
@@ -185,6 +192,21 @@ fn refuses_to_overwrite_the_source_pdf() {
         .unwrap();
     assert_eq!(result.status.code(), Some(2));
     assert_eq!(fs::read(&pdf).unwrap(), before);
+}
+
+#[test]
+fn explicit_destinations_are_resolved() {
+    let dir = tempfile::tempdir().unwrap();
+    let pdf = dir.path().join("explicit.pdf");
+    fixture(&pdf, true);
+    let report = audit_pdf(&pdf, None).unwrap();
+    let explicit = report
+        .links
+        .iter()
+        .find(|link| link.target == "explicit destination")
+        .expect("explicit destination record");
+    assert_eq!(explicit.status, LinkStatus::Valid);
+    assert_eq!(explicit.target_page, Some(2));
 }
 
 #[test]

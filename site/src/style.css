@@ -8,3 +8,4 @@
 .demo-banner{position:relative;z-index:3;width:min(1180px,calc(100% - 32px));margin:12px auto 0;padding:10px 14px;background:#dce4dc;border:2px solid var(--ink);display:flex;align-items:center;flex-wrap:wrap;gap:12px;font-size:.9rem}.demo-banner p{margin:0;margin-right:auto}.demo-banner a{min-height:44px;display:inline-flex;align-items:center}.action-note{margin:-12px 0 20px;color:var(--muted);font-size:.85rem}
 @media(max-width:480px){.demo-banner{width:calc(100% - 24px)}.demo-banner p{width:100%}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+.not-found-page{min-height:52vh}.not-found-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}

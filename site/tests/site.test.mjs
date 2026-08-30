@@ -4,15 +4,33 @@ import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const dist = new URL('../../dist/site/', import.meta.url).pathname;
-test('build has deploy entry and legal routes', async () => {
-  for (const path of ['index.html', 'privacy/index.html', 'terms/index.html', 'sw.js', 'staticwebapp.config.json']) assert.ok((await stat(join(dist, path))).isFile(), path);
+test('build has deploy, discovery, legal, and designed not-found routes', async () => {
+  for (const path of ['index.html', 'privacy/index.html', 'terms/index.html', '404.html', 'robots.txt', 'sitemap.xml', 'apple-touch-icon.png', 'link-map-social-card.jpg', 'sw.js', 'staticwebapp.config.json']) assert.ok((await stat(join(dist, path))).isFile(), path);
   const serviceWorker = await readFile(join(dist, 'sw.js'), 'utf8');
   assert.match(serviceWorker, /\/assets\/main-[A-Za-z0-9_-]+\.js/);
   assert.doesNotMatch(serviceWorker, /staticwebapp\.config\.json/);
 });
-test('landing markup has required semantics and does not advertise an unavailable checkout', async () => {
+test('landing markup names the intended team, has required semantics, metadata, and no unavailable checkout', async () => {
   const html = await readFile(join(dist, 'index.html'), 'utf8');
-  assert.match(html, /<html lang="en">/); assert.equal((html.match(/<h1/g) ?? []).length, 1); assert.match(html, /<main/); assert.match(html, /Team rollout kit is being prepared/); assert.doesNotMatch(html, /\/checkout/); assert.doesNotMatch(html, /api\.sociobot\.in/); assert.match(html, /alt="Illustrated lab notebook/);
+  assert.match(html, /<html lang="en">/); assert.equal((html.match(/<h1/g) ?? []).length, 1); assert.match(html, /<main/); assert.match(html, /For operations and technical-document teams converting HTML or DOCX to PDF/); assert.match(html, /Team rollout kit is being prepared/); assert.doesNotMatch(html, /\/checkout/); assert.doesNotMatch(html, /api\.sociobot\.in/); assert.match(html, /alt="Illustrated lab notebook/);
+  for (const marker of ['rel="canonical"', 'property="og:title"', 'name="twitter:card"', 'apple-touch-icon']) assert.match(html, new RegExp(marker));
+});
+test('legal and not-found routes retain the standard shell and route metadata', async () => {
+  for (const path of ['privacy/index.html', 'terms/index.html', '404.html']) {
+    const html = await readFile(join(dist, path), 'utf8');
+    assert.equal((html.match(/<h1/g) ?? []).length, 1, path);
+    assert.match(html, /<header class="site-header">/, path);
+    assert.match(html, /<footer class="site-footer">/, path);
+    assert.match(html, /rel="canonical"/, path);
+    assert.match(html, /property="og:title"/, path);
+  }
+  const config = JSON.parse(await readFile(join(dist, 'staticwebapp.config.json'), 'utf8'));
+  assert.equal(config.responseOverrides?.['404']?.rewrite, '/404.html');
+  assert.equal(config.responseOverrides?.['404']?.statusCode, undefined);
+});
+test('each public claim has one matching tagged demo test', async () => {
+  const claims = JSON.parse(await readFile(new URL('../../.factory/claims.json', import.meta.url), 'utf8'));
+  for (const claim of claims) assert.match(claim.test, new RegExp(`@claim:${claim.id}`), claim.id);
 });
 test('deployment configuration enforces browser isolation and transport policy', async () => {
   const config = JSON.parse(await readFile(join(dist, 'staticwebapp.config.json'), 'utf8'));

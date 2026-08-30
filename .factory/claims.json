@@ -3,14 +3,28 @@
     "id": "offline-shell",
     "claim": "Works offline after the first visit.",
     "where": "site footer",
-    "test": "npm run build:site && node --test --test-name-pattern='@claim:offline-shell' site/tests/claims.test.mjs",
-    "sandbox": "Fresh browser context visits the bundled site, waits for its service worker, goes offline, then reloads the landing page."
+    "test": "npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:offline-shell' site/tests/claims.test.mjs",
+    "sandbox": "Fresh 390px browser context visits the bundled demo, waits for its service worker, goes offline, then reloads the demo."
   },
   {
     "id": "no-web-tracking",
     "claim": "The website has no telemetry.",
     "where": "README privacy section and /privacy/",
-    "test": "npm run build:site && node --test --test-name-pattern='@claim:no-web-tracking' site/tests/claims.test.mjs",
-    "sandbox": "Fresh browser context records every request while loading the landing page and accepts only same-origin requests."
+    "test": "npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:no-web-tracking' site/tests/claims.test.mjs",
+    "sandbox": "Fresh 390px browser context records every request and cookie while loading the bundled demo; only same-origin requests and no cookies are accepted."
+  },
+  {
+    "id": "local-only-cli",
+    "claim": "The CLI keeps PDFs local, records external addresses without requesting them, and does not modify the input PDF.",
+    "where": "landing privacy note, README, /privacy/, and /terms/",
+    "test": "npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:local-only-cli' site/tests/claims.test.mjs",
+    "sandbox": "The CLI demo fixture is rewritten to point at a local HTTP probe. The test requires zero probe requests, a recorded external-link result, and an unchanged input hash."
+  },
+  {
+    "id": "cli-audit-and-ci",
+    "claim": "The free CLI runs without an account, checks bundled PDF links, writes an HTML map and JSON, and uses exits 0, 1, and 2 for success, policy failure, and invalid input.",
+    "where": "landing capability/install copy and README usage, validation, and exit-code sections",
+    "test": "npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:cli-audit-and-ci' site/tests/claims.test.mjs",
+    "sandbox": "The CLI demo runs with an empty environment, its JSON and HTML map are inspected for valid, broken, external, and manifest results, then broken-policy and malformed-input exits are asserted."
   }
 ]

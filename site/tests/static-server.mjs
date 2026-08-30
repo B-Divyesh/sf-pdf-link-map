@@ -10,7 +10,13 @@ createServer(async (req, res) => {
     // expose it. Match that behavior so PWA precache regressions are local.
     if (path === 'staticwebapp.config.json') { res.statusCode = 404; res.end('Not found'); return; }
     if (!path || path.endsWith('/')) path += 'index.html';
-    let file = join(root, path); if (!(await stat(file)).isFile()) file = join(root, 'index.html');
+    let file = join(root, path);
+    try {
+      if (!(await stat(file)).isFile()) throw new Error('not a file');
+    } catch {
+      file = join(root, '404.html');
+      res.statusCode = 404;
+    }
     res.setHeader('content-type', types[extname(file)] ?? 'application/octet-stream'); res.end(await readFile(file));
   } catch { res.statusCode = 404; res.end('Not found'); }
 }).listen(4178, '127.0.0.1');

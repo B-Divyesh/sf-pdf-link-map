@@ -73,6 +73,12 @@ npm run build
 
 `npm test` runs the Rust unit/integration suite and site tests. `npm run build` creates the static deployment in `dist/site/` and a release CLI binary under `target/release/`. To preview the site: `npm run dev`.
 
+## Deploy
+
+The factory deploys the static site from `dist/site/`. Build with `npm run build`
+before deployment; `staticwebapp.config.json` ships the required cache and
+security-header policy with that directory.
+
 Create a publishable source package without publishing it:
 
 ```sh

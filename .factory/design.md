@@ -39,6 +39,7 @@ On entry, the traced link route and notes resolve once over 240–500ms using op
 ## Asset plan and provenance
 
 - Hero: original raster illustration generated for this product, depicting a top-down lab notebook with a printed PDF contents sheet, a red pencil tracing a link path, verification marks, and no legible generated text. Generated with `/opt/fleet/lib/gen-image.sh` using the factory image deployment on 2026-08-28; source PNG and prompt metadata are retained in `site/src/assets/provenance/`, optimized WebP is shipped. License: created for this repository under MIT.
+- Sharing image: `site/public/link-map-social-card.jpg` is a 1200×630 center crop derived locally from that same original hero WebP on 2026-08-30; it carries no new generated text or third-party asset. The 180×180 Apple touch icon is a locally drawn raster version of the repository’s original SVG route mark.
 - Icons and link-route marks: original CSS shapes or inline, accessible characters; no external icon pack.
 - Paper rules and grain: CSS gradients rendered locally, no network asset.
 

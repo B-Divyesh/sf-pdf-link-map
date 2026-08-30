@@ -13,6 +13,7 @@ try {
   const consoleErrors = []; page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
   const outboundRequests = []; page.on('request', request => { if (!request.url().startsWith('http://127.0.0.1:4178/')) outboundRequests.push(request.url()); });
   await page.goto('http://127.0.0.1:4178/', { waitUntil: 'networkidle' });
+  assert.match(await page.locator('.lead').textContent(), /For operations and technical-document teams converting HTML or DOCX to PDF/);
   const mobileInstallLayout = await page.evaluate(() => {
     const root = document.documentElement;
     const installNotes = document.querySelector('.code-notes');
@@ -65,6 +66,12 @@ try {
   await context.setOffline(false);
   await page.goto('http://127.0.0.1:4178/privacy/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('h1').textContent(), 'Privacy');
+  assert.equal(await page.locator('header.site-header').count(), 1);
+  assert.equal(await page.locator('footer.site-footer').count(), 1);
+  const notFound = await page.goto('http://127.0.0.1:4178/404', { waitUntil: 'networkidle' });
+  assert.equal(notFound?.status(), 404);
+  assert.equal(await page.title(), 'Page not found — PDF Link Map');
+  assert.equal(await page.getByRole('link', { name: 'Go to PDF Link Map' }).count(), 1);
   await page.goto('http://127.0.0.1:4178/?demo=1#demo', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#demo-banner').isVisible(), true);
   assert.equal(await page.title(), 'Demo — PDF Link Map');

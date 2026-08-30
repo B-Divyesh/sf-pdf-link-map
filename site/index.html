@@ -6,7 +6,20 @@
     <meta name="description" content="Audit internal and external PDF links locally, validate destinations, and create a clickable HTML map.">
     <meta name="theme-color" content="#f4eedb">
     <title>PDF Link Map — navigation QA for converted PDFs</title>
+    <link rel="canonical" href="https://pdf-link-map.sociobot.in/">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PDF Link Map — navigation QA for converted PDFs">
+    <meta property="og:description" content="Audit internal and external PDF links locally, validate destinations, and create a clickable HTML map.">
+    <meta property="og:url" content="https://pdf-link-map.sociobot.in/">
+    <meta property="og:image" content="https://pdf-link-map.sociobot.in/link-map-social-card.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PDF Link Map — navigation QA for converted PDFs">
+    <meta name="twitter:description" content="Audit internal and external PDF links locally, validate destinations, and create a clickable HTML map.">
+    <meta name="twitter:image" content="https://pdf-link-map.sociobot.in/link-map-social-card.jpg">
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
@@ -17,6 +30,7 @@
         <a href="#how">How it works</a>
         <a href="/?demo=1#demo">Demo</a>
         <a href="#team-status">Team status</a>
+        <a href="/privacy/">Privacy</a>
       </nav>
     </header>
     <aside id="demo-banner" class="demo-banner" role="status" hidden>
@@ -28,9 +42,9 @@
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="kicker"><span class="pin" aria-hidden="true"></span> PDF navigation field notes / v0.1</p>
-          <h1 id="hero-title">Find the links your PDF converter quietly broke.</h1>
-          <p class="lead">One local command inventories every link annotation, checks where it lands, and leaves a clickable map for reviewers and CI.</p>
+          <p class="kicker"><span class="pin" aria-hidden="true"></span> PDF navigation audit / v0.1</p>
+          <h1 id="hero-title">Check links after PDF conversion.</h1>
+          <p class="lead">For operations and technical-document teams converting HTML or DOCX to PDF, one local command checks links and writes a clickable map.</p>
           <div class="hero-actions">
             <a class="button primary" href="#install">Install the CLI</a>
             <a class="button secondary" href="/?demo=1#demo">Try it with sample data</a>
@@ -40,7 +54,7 @@
         </div>
         <figure class="hero-figure">
           <img src="/link-map-notebook.webp" srcset="/link-map-notebook-640.webp 640w, /link-map-notebook.webp 960w" sizes="(max-width: 800px) calc(100vw - 32px), 46vw" width="960" height="640" fetchpriority="high" alt="Illustrated lab notebook with document pages, linked blue nodes, green checks, and one route circled in red pencil">
-          <figcaption>Trace every route before the handoff.</figcaption>
+          <figcaption>Check routes before release.</figcaption>
         </figure>
       </section>
 
@@ -52,22 +66,22 @@
 
       <section id="how" class="section ruled" aria-labelledby="how-title">
         <div class="section-heading">
-          <p class="eyebrow">Method 01</p>
-          <h2 id="how-title">Make navigation a release artifact</h2>
+          <p class="eyebrow">How it works</p>
+          <h2 id="how-title">Check converted PDF navigation</h2>
           <p>Run the same audit after LibreOffice, Chromium, wkhtmltopdf, or any other converter. The checker reads the finished PDF—not the tool that made it.</p>
         </div>
         <ol class="method-list">
           <li><span>1</span><div><h3>Inspect annotations</h3><p>Inventory GoTo and URI actions without rendering pages or contacting the network.</p></div></li>
           <li><span>2</span><div><h3>Resolve destinations</h3><p>Follow explicit pages and PDF name trees. Flag missing pages, anchors, and duplicates.</p></div></li>
-          <li><span>3</span><div><h3>Leave evidence</h3><p>Open the standalone HTML map for review, or consume JSON and stable exit codes in CI.</p></div></li>
+          <li><span>3</span><div><h3>Write a review map</h3><p>Open the standalone HTML map for review, or consume JSON and stable exit codes in CI.</p></div></li>
         </ol>
       </section>
 
       <section id="install" class="section install-section" aria-labelledby="install-title">
         <div>
-          <p class="eyebrow">Field command</p>
+          <p class="eyebrow">Install</p>
           <h2 id="install-title">A single binary. No account.</h2>
-          <p>Build from source today. Release binaries can be attached without changing the command or report schema.</p>
+          <p>Build from source today.</p>
         </div>
         <div class="code-notes">
           <div class="code-block">
@@ -87,7 +101,7 @@
 
       <section id="demo" class="section demo-section" aria-labelledby="demo-title">
         <div class="section-heading">
-          <p class="eyebrow">Pinned specimen</p>
+          <p class="eyebrow">Sample results</p>
           <h2 id="demo-title">Read a link map before you make one</h2>
           <p>This browser specimen uses bundled, non-sensitive sample results. Actual PDFs are inspected only by the local CLI.</p>
         </div>
@@ -115,8 +129,8 @@
 
       <section id="team-status" class="section pricing-section" aria-labelledby="team-status-title">
         <div class="price-copy">
-          <p class="eyebrow">Team notebook</p>
-          <h2 id="team-status-title">Keep the checker free, complete, and local.</h2>
+          <p class="eyebrow">Team availability</p>
+          <h2 id="team-status-title">Free CLI availability</h2>
           <p>The CLI includes complete audits, HTML and JSON export, manifests, and failure thresholds. There is no account, checkout, or license required to use the release workflow.</p>
           <p class="legal-note"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
         </div>
@@ -129,7 +143,7 @@
 
       <section class="section final-note" aria-label="Call to action">
         <p class="hand-note">A visible contents page is not proof of working navigation.</p>
-        <h2>Test the handoff, not the hope.</h2>
+        <h2>Check PDF navigation before release.</h2>
         <a class="button primary" href="#install">Install PDF Link Map</a>
       </section>
     </main>
@@ -137,6 +151,7 @@
     <footer class="site-footer">
       <p><strong>PDF Link Map</strong> · local navigation QA</p>
       <nav aria-label="Footer navigation"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-pdf-link-map">Source</a></nav>
+      <p>Built by Param Factory · v0.1.0</p>
       <p id="network-state" class="network-state">Works offline after first visit.</p>
     </footer>
   </body>

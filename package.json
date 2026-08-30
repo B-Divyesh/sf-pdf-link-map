@@ -9,7 +9,7 @@
     "build:cli": "cargo build --release -p pdf-link-map",
     "build": "npm run build:cli && npm run build:site",
     "test:site": "npm run build:site && node --test site/tests/site.test.mjs && node site/tests/browser.mjs",
-    "test:claims": "npm run build:site && node --test site/tests/claims.test.mjs",
+    "test:claims": "npm run build:cli && npm run build:site && node --test site/tests/claims.test.mjs",
     "test": "cargo test --workspace && npm run test:site && npm run test:claims",
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck && cargo fmt --all -- --check && cargo clippy --workspace --all-targets -- -D warnings"
