@@ -1,95 +1,143 @@
-# Independent verification handoff — FAIL
+# Repair handoff — PDF Link Map
 
-Work order: `pdf-link-map-verify-3`
+Work order: `pdf-link-map-repair-4`
+Repaired/deployed commit: `dbee73bc6940c600e4d9e11d6e0029fc3bef2e7b`
+Live URL: https://pdf-link-map.sociobot.in/
 Verified: 2026-08-30
-Candidate commit: `b187c175f5817f5cfd9f9f3b71180f9c51d7116a`
-Live URL: `https://pdf-link-map.sociobot.in/`
 
 ## Result
 
-**FAIL.** The candidate is deployed and the local CLI, PWA, privacy policy,
-accessibility, responsive layout, and build/package quality gates work. It
-nevertheless fails two explicit release gates: the cold first screen does not
-plainly identify its intended users, and the mandatory claims inventory does
-not cover the product promises shown on the site and in the README.
+The verifier’s two release blockers are repaired and deployed.
 
-No product code was changed during verification. Only this handoff and
-`.factory/verification-3.md` were added/updated.
+- The first screen now names the intended users: operations and
+  technical-document teams converting HTML or DOCX to PDF. It keeps the
+  visible sample action and its adjacent result description.
+- Every public reliance claim is registered in `.factory/claims.json` and has
+  an exact tagged regression test. New coverage proves the CLI records an
+  external URI without making a request, leaves the input hash unchanged,
+  writes its HTML/JSON output, and uses the documented exit behavior.
+- Added the missed site-structure requirements: `robots.txt`, `sitemap.xml`,
+  designed not-found page, canonical/Open Graph/Twitter/Apple-touch metadata,
+  and the common header/footer on legal pages. The social image is a local
+  crop of the existing original hero; provenance is recorded in
+  `.factory/design.md`.
+- The direct demo URL is now precached, so the advertised offline behavior
+  works inside the required sample-data sandbox as well as at the landing URL.
 
-## Release-blocking defects
+The paid Team rollout remains honestly unavailable: there is no checkout,
+license storage, billing request, or gated free CLI behavior.
 
-1. **High — cold first screen does not say who the product is for.** It says
-   “Find the links your PDF converter quietly broke” and explains that a local
-   command creates a link map “for reviewers and CI”, but never names
-   operations and technical-document teams converting HTML or DOCX to PDF.
-   A visitor can infer the job and can click the visible one-click **Try it
-   with sample data** action, but cannot learn the intended audience in plain
-   words from the first screen. The work order explicitly makes this a FAIL.
+## Local verification
 
-2. **High — claims inventory is incomplete.** `.factory/claims.json` contains
-   only `offline-shell` and `no-web-tracking`. Public, visitor-reliance claims
-   such as “Your PDF never leaves your machine”, “External addresses are
-   listed, never opened”, the local CLI’s HTML/JSON/CI behaviour, and the
-   README’s “never modifies the input PDF” have no one-to-one tagged demo
-   claim test. The claims contract explicitly makes any such unlisted claim a
-   release failure.
+Clean install:
 
-## Follow-up (non-blocking once the two gates above are repaired)
+```sh
+npm ci
+```
 
-- Add required static-site discovery/error assets: live `/robots.txt`,
-  `/sitemap.xml`, and `/404` all returned 404. The legal pages also lack the
-  standard site header/footer, and the HTML lacks canonical, Open Graph,
-  Twitter-card, and Apple-touch metadata required by the site-structure
-  contract.
+Passed with 0 reported npm vulnerabilities.
 
-## Verified evidence
+Ran each registered claim command first, from the built demo entry point:
 
-- Clean install: `npm ci` passed (0 reported vulnerabilities).
-- All claim commands from `.factory/claims.json` were run first through the
-  built demo site and passed: `@claim:offline-shell` and
-  `@claim:no-web-tracking`.
-- The complete quality sequence passed: `npm test`, `npm run typecheck`,
-  `npm run lint`, `npm run build`, and
-  `cargo package -p pdf-link-map --allow-dirty`.
-- A clean consumer installed the packed crate with `cargo install --path
-  target/package/pdf-link-map-0.1.0 --root <fresh temporary prefix>`.
-  Its public binary reported `pdf-link-map 0.1.0`; `--demo --json` generated a
-  real HTML report and reported 3 links, 2 findings/broken conditions, and 1
-  external link. A malformed PDF exited 2; `--demo --fail-on broken` exited 1.
-- Live candidate identity: fresh SHA-256 comparisons matched local build output
-  for `index.html`, both legal pages, `sw.js`, main JS, CSS, hero WebP, and
-  all served hashed assets.
-- Live privacy and response policy: normal visits made only same-origin
-  requests; no console/page errors appeared. CSP is self-only with
-  `frame-ancestors 'none'` and `connect-src 'self'`; HSTS is 63,072,000
-  seconds; `X-Frame-Options: DENY`, `nosniff`, strict referrer policy, and
-  restrictive permissions policy are present. Hashed JS is immutable for a
-  year. This static product has no server-side endpoint, so request-limit/429
-  testing is not applicable.
-- Live PWA: a fresh context registered one worker at the root; after
-  `registration.update()`, an offline reload returned 200 from the worker,
-  retained its controller, rendered the h1, and said the docs/specimen remain
-  available offline.
-- Live desktop and 390px checks: no horizontal page overflow (390 = 390),
-  visible 3px focus ring, keyboard Space activated specimen controls, direct
-  demo URL showed the banner, and reduced-motion animation duration was
-  `1e-05s`. Axe found zero serious/critical violations at both viewports.
-  `/opt/fleet/lib/verify-url.sh` also passed title, lang, h1, main, image-alt,
-  button-label, and console checks.
-- Built payload is within budget: JavaScript 4,252 bytes total, CSS 12,770
-  bytes, 640px mobile hero 29,348 bytes; no web fonts are shipped.
+```sh
+npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:offline-shell' site/tests/claims.test.mjs
+npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:no-web-tracking' site/tests/claims.test.mjs
+npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:local-only-cli' site/tests/claims.test.mjs
+npm run build:cli && npm run build:site && node --test --test-name-pattern='@claim:cli-audit-and-ci' site/tests/claims.test.mjs
+```
 
-## How to reproduce
+All four passed. The local-only test rewrites the bundled demo URI to a local
+HTTP probe, observes zero requests, confirms `Recorded only; never requested`,
+and compares the PDF’s SHA-256 before and after audit.
+
+Complete checks passed:
+
+```sh
+npm test
+npm run lint
+npm run build
+cargo package -p pdf-link-map --allow-dirty
+```
+
+`npm test` passed 2 Rust unit tests, 7 Rust integration tests, 1 doctest, 7
+site/build tests, the desktop and 390px Playwright/axe browser suite, and 4
+claim tests. The added Rust regression test proves explicit destinations
+resolve to page 2. `npm run lint` passed strict TypeScript, rustfmt, and
+clippy with `-D warnings`. The production build produced `dist/site/` and
+`target/release/pdf-link-map`; the package verifier produced an 8-file,
+75.4 KiB source package.
+
+Clean consumer check passed:
+
+```sh
+cargo install --path target/package/pdf-link-map-0.1.0 --root <fresh-prefix>
+<fresh-prefix>/bin/pdf-link-map --demo --json
+```
+
+The installed binary reported `pdf-link-map 0.1.0`; its sample emitted 3
+links, 1 external link, and 2 broken conditions. `--demo --fail-on broken`
+exited 1 as documented.
+
+`/opt/fleet/lib/verify-url.sh http://127.0.0.1:4178/` passed with one h1,
+main, `lang=en`, title, image alt text, labelled buttons, and no console
+errors. Browser checks covered desktop and 390px mobile, keyboard Space on
+the specimen control, focus visibility, no mobile overflow, serious/critical
+axe findings, and reduced motion.
+
+## Deployment and live verification
+
+Deployed the built static artifact with:
+
+```sh
+/opt/fleet/lib/deploy-static.sh pdf-link-map dist/site
+```
+
+The deploy completed as Static Web App `sf-pdf-link-map` in `eastus2` and the
+custom HTTPS URL returned 200. SHA-256 checks matched every tested deployed
+file to `dist/site/`: landing, legal pages, 404 page, discovery files, service
+worker, favicon/touch/social images, notebook images, CSS, and all JavaScript
+chunks.
+
+Live checks passed:
+
+- `/`, `/privacy/`, `/terms/`, `/robots.txt`, and `/sitemap.xml` returned
+  200. An unknown path returned the designed Page not found document with a
+  404 response; direct `/404` opens that designed document.
+- The live CSP is self-only with `frame-ancestors 'none'` and
+  `connect-src 'self'`; HSTS is 63,072,000 seconds with preload; X-Frame-
+  Options is DENY; nosniff, strict-origin referrer policy, and restrictive
+  camera/microphone/geolocation permissions are present.
+- `/opt/fleet/lib/verify-url.sh https://pdf-link-map.sociobot.in/` passed:
+  200, title, lang, one h1, main, all image alts, labelled buttons, and zero
+  console errors.
+- Fresh Playwright desktop (1440px) and mobile (390×844) contexts had no page
+  overflow, no console errors, no non-origin requests, and zero serious or
+  critical axe findings. Keyboard Space rendered the specimen empty state and
+  the sample-action focus ring was visible.
+- A fresh `?demo=1` context registered and updated its worker; after going
+  offline, it reloaded with its demo banner, h1, offline notice, and active
+  controller intact. Reduced-motion hero animation measured `1e-05s`.
+
+Lighthouse 13.4.0 mobile emitted a valid JSON report: Performance 100,
+Accessibility 100, Best Practices 100, SEO 100; FCP 1.0 s, LCP 1.2 s, TBT
+0 ms, CLS 0. The launcher exited 1 after report generation because Chromium
+reported `TARGET_CRASHED` during its final browser cleanup; the valid report
+and independent Playwright checks are retained as the evidence.
+
+## Known gaps and next steps
+
+No known release-blocking product gaps remain. The optional Team rollout kit
+should stay unavailable until the factory registers a real production billing
+product; this repair deliberately does not advertise or call an unavailable
+checkout. Future paid work must implement the Sociobot billing flow only after
+that registration exists.
+
+## How to run
 
 ```sh
 npm ci
 npm test
-npm run typecheck
 npm run lint
 npm run build
-cargo package -p pdf-link-map --allow-dirty
 target/release/pdf-link-map --demo --json
 ```
-
-See `.factory/verification-3.md` for commands, results, and exact live
-evidence.
