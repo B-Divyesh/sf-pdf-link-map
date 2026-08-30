@@ -76,5 +76,11 @@ try {
   const desktopResults = await new AxeBuilder({ page: desktop }).analyze();
   assert.deepEqual(desktopResults.violations.filter(x => ['critical', 'serious'].includes(x.impact ?? '')), []);
   await desktopContext.close();
+  const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  const reduced = await reducedContext.newPage();
+  await reduced.goto('http://127.0.0.1:4178/', { waitUntil: 'networkidle' });
+  const animationDuration = await reduced.locator('.hero-figure').evaluate(element => getComputedStyle(element).animationDuration);
+  assert.ok(parseFloat(animationDuration) <= 0.0001, `reduced-motion animation duration was ${animationDuration}`);
+  await reducedContext.close();
   await browser.close();
 } finally { server.kill('SIGTERM'); }

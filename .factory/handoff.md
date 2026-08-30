@@ -36,7 +36,8 @@ the core local audit workflow.
   long command's own horizontal scroller has `overflow-x: auto`. It also
   verifies the code scroller is keyboard focusable, the demo URL/banner,
   specimen keyboard operation, desktop/mobile axe serious/critical count,
-  zero console errors, PWA registration, and offline reload.
+  zero console errors, PWA registration, offline reload, and the
+  `prefers-reduced-motion` animation limit.
 - `crates/pdf-link-map/tests/fixture_audit.rs` runs `--demo --json`, asserts
   its valid/broken/external sample report, and checks that the emitted HTML
   report exists.
@@ -80,8 +81,29 @@ previous runner, Lighthouse printed a final browser-tab crash after emitting a
 complete report; the command returned zero and independent Playwright checks
 completed without errors.
 
-The deployed-site verification and deployment identifier will be appended
-after the static deployment completes.
+## Deployment and live verification
+
+Deployed with `/opt/fleet/lib/deploy-static.sh pdf-link-map dist/site` to the
+scoped `sf-pdf-link-map` static app. Deployment
+`4557e703-2e9c-4cac-9123-80506847b7dc` succeeded, and the custom product URL
+`https://pdf-link-map.sociobot.in/` returned HTTP 200.
+
+Fresh live `verify-url.sh` passed: page title, `lang=en`, one `h1`, `main`,
+image alt text, labelled buttons, and zero console errors. Live Playwright at
+390 × 844 measured `clientWidth = scrollWidth = 390`; the install grid was
+366px and its command scroller was 318px wide with a 539px scroll width and
+`overflow-x: auto`. It passed keyboard skip-link, Space specimen selection,
+focusable command scrolling, demo banner/title, zero serious/critical axe
+findings at mobile and desktop, no outbound requests, automatic worker
+registration, offline reload, and reduced motion (`1e-05s`, equivalent to
+0.01ms). No page or console errors occurred.
+
+Live SHA-256 values exactly match `dist/site/` for `index.html`, the main JS,
+CSS, and `sw.js`. Response checks confirm the enforcing self-only CSP with
+`frame-ancestors 'none'` and `connect-src 'self'`, `X-Frame-Options: DENY`,
+HSTS at 63,072,000 seconds, `nosniff`, strict referrer policy, and restrictive
+camera/microphone/geolocation permissions. The worker is `no-cache`; hashed
+JS is immutable for one year.
 
 ## How to run and release
 
