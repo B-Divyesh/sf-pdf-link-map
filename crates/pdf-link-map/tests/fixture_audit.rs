@@ -186,3 +186,21 @@ fn refuses_to_overwrite_the_source_pdf() {
     assert_eq!(result.status.code(), Some(2));
     assert_eq!(fs::read(&pdf).unwrap(), before);
 }
+
+#[test]
+fn demo_command_creates_a_real_sample_report() {
+    let result = Command::new(env!("CARGO_BIN_EXE_pdf-link-map"))
+        .args(["--demo", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(result.status.code(), Some(0));
+    let report: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(report["summary"]["total_links"], 3);
+    assert_eq!(report["summary"]["external_links"], 1);
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    let report_path = stderr
+        .lines()
+        .find_map(|line| line.strip_prefix("Demo report: "))
+        .expect("demo report path");
+    assert!(std::path::Path::new(report_path).is_file());
+}

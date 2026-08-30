@@ -15,6 +15,13 @@ pdf-link-map --help
 
 ## Usage
 
+Try the full audit with the bundled sample PDF. It creates a temporary input,
+heading manifest, and standalone HTML report, then prints their paths:
+
+```sh
+pdf-link-map --demo
+```
+
 Audit a PDF and create a report next to it:
 
 ```sh

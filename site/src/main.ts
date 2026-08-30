@@ -64,6 +64,12 @@ document.querySelectorAll<HTMLButtonElement>('[data-specimen]').forEach(button =
 }));
 renderSpecimen('broken');
 
+const demoBanner = document.querySelector<HTMLElement>('#demo-banner');
+if (new URLSearchParams(window.location.search).get('demo') === '1') {
+  if (demoBanner) demoBanner.hidden = false;
+  document.title = 'Demo — PDF Link Map';
+}
+
 document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(button => button.addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(button.dataset.copy ?? ''); button.textContent = 'Copied'; }
   catch { button.textContent = 'Select the command above'; }

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "offline-shell",
+    "claim": "Works offline after the first visit.",
+    "where": "site footer",
+    "test": "npm run build:site && node --test --test-name-pattern='@claim:offline-shell' site/tests/claims.test.mjs",
+    "sandbox": "Fresh browser context visits the bundled site, waits for its service worker, goes offline, then reloads the landing page."
+  },
+  {
+    "id": "no-web-tracking",
+    "claim": "The website has no telemetry.",
+    "where": "README privacy section and /privacy/",
+    "test": "npm run build:site && node --test --test-name-pattern='@claim:no-web-tracking' site/tests/claims.test.mjs",
+    "sandbox": "Fresh browser context records every request while loading the landing page and accepts only same-origin requests."
+  }
+]

@@ -15,10 +15,15 @@
       <a class="wordmark" href="/" aria-label="PDF Link Map home"><span aria-hidden="true">↳</span> PDF Link Map</a>
       <nav aria-label="Primary navigation">
         <a href="#how">How it works</a>
-        <a href="#demo">Specimen</a>
+        <a href="/?demo=1#demo">Demo</a>
         <a href="#team-status">Team status</a>
       </nav>
     </header>
+    <aside id="demo-banner" class="demo-banner" role="status" hidden>
+      <p><strong>Demo</strong> — sample data, nothing is saved.</p>
+      <a href="/?demo=1#demo">Reset demo</a>
+      <a href="/#install">Start for real</a>
+    </aside>
 
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
@@ -28,8 +33,9 @@
           <p class="lead">One local command inventories every link annotation, checks where it lands, and leaves a clickable map for reviewers and CI.</p>
           <div class="hero-actions">
             <a class="button primary" href="#install">Install the CLI</a>
-            <a class="button secondary" href="#demo">Open specimen</a>
+            <a class="button secondary" href="/?demo=1#demo">Try it with sample data</a>
           </div>
+          <p class="action-note">Opens a bundled link-map sample in this page.</p>
           <p class="privacy-note"><strong>Local by design.</strong> Your PDF never leaves your machine. External addresses are listed, never opened.</p>
         </div>
         <figure class="hero-figure">

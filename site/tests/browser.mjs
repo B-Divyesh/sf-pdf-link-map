@@ -13,14 +13,39 @@ try {
   const consoleErrors = []; page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
   const outboundRequests = []; page.on('request', request => { if (!request.url().startsWith('http://127.0.0.1:4178/')) outboundRequests.push(request.url()); });
   await page.goto('http://127.0.0.1:4178/', { waitUntil: 'networkidle' });
-  assert.ok(
-    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+  const mobileInstallLayout = await page.evaluate(() => {
+    const root = document.documentElement;
+    const installNotes = document.querySelector('.code-notes');
+    const commandScroller = document.querySelector('.code-block pre');
+    if (!installNotes || !commandScroller) throw new Error('install command UI is missing');
+    return {
+      clientWidth: root.clientWidth,
+      scrollWidth: root.scrollWidth,
+      installNotesWidth: installNotes.getBoundingClientRect().width,
+      commandClientWidth: commandScroller.clientWidth,
+      commandScrollWidth: commandScroller.scrollWidth,
+      commandOverflowX: getComputedStyle(commandScroller).overflowX,
+    };
+  });
+  assert.equal(
+    mobileInstallLayout.scrollWidth,
+    mobileInstallLayout.clientWidth,
     'the 390px document must not acquire page-level horizontal scrolling'
   );
+  assert.ok(
+    mobileInstallLayout.installNotesWidth <= mobileInstallLayout.clientWidth,
+    'the install grid item must release the long command’s min-content width'
+  );
+  assert.ok(
+    mobileInstallLayout.commandScrollWidth > mobileInstallLayout.commandClientWidth,
+    'the long command must scroll inside its labelled code block instead of widening the page'
+  );
+  assert.equal(mobileInstallLayout.commandOverflowX, 'auto');
   await page.waitForFunction(() => navigator.serviceWorker.getRegistrations().then(registrations => registrations.length > 0));
   assert.equal(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then(registrations => registrations[0]?.scope)), 'http://127.0.0.1:4178/');
   assert.equal(await page.evaluate(() => navigator.serviceWorker.ready.then(registration => registration.scope)), 'http://127.0.0.1:4178/');
   assert.equal(await page.locator('h1').count(), 1);
+  assert.equal(await page.getByRole('link', { name: 'Try it with sample data' }).count(), 1);
   await page.getByRole('button', { name: 'No annotations' }).focus();
   await page.keyboard.press('Space');
   await page.getByText('No link annotations to map.').waitFor();
@@ -40,6 +65,10 @@ try {
   await context.setOffline(false);
   await page.goto('http://127.0.0.1:4178/privacy/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('h1').textContent(), 'Privacy');
+  await page.goto('http://127.0.0.1:4178/?demo=1#demo', { waitUntil: 'networkidle' });
+  assert.equal(await page.locator('#demo-banner').isVisible(), true);
+  assert.equal(await page.title(), 'Demo — PDF Link Map');
+  assert.equal(await page.getByText('Demo — sample data, nothing is saved.').count(), 1);
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const desktop = await desktopContext.newPage();
   await desktop.goto('http://127.0.0.1:4178/', { waitUntil: 'networkidle' });
