@@ -1,131 +1,95 @@
-# PDF Link Map repair handoff
+# Independent verification handoff — FAIL
 
-Work order: `pdf-link-map-repair-3`
-Verifier report: `6b782ae3a7943abcfbcc8110778590efb5980693`
-Verified candidate reproduced: `b322620915b16c78f99cf84f221bca2776b8d8d4`
-Repair branch base: `1a45068dd6424b12b44e33d34fec716314471701`
+Work order: `pdf-link-map-verify-3`
+Verified: 2026-08-30
+Candidate commit: `b187c175f5817f5cfd9f9f3b71180f9c51d7116a`
+Live URL: `https://pdf-link-map.sociobot.in/`
 
-## Outcome
+## Result
 
-Both release blockers from the independent report are repaired without changing
-the core local audit workflow.
+**FAIL.** The candidate is deployed and the local CLI, PWA, privacy policy,
+accessibility, responsive layout, and build/package quality gates work. It
+nevertheless fails two explicit release gates: the cold first screen does not
+plainly identify its intended users, and the mandatory claims inventory does
+not cover the product promises shown on the site and in the README.
 
-- The exact candidate was rebuilt in a detached worktree and inspected at
-  390 × 844. It reproduced the verifier's measurement exactly:
-  `clientWidth = 390`, `scrollWidth = 599`, and the install grid grew to
-  `587.438px`. The long `cargo install` command was imposing its min-content
-  width on the single-column mobile track.
-- The released layout explicitly releases the grid items' automatic minimum
-  width. The command now scrolls only inside its labelled, keyboard-focusable
-  `pre` element. The repaired 390px build measures `clientWidth = 390` and
-  `scrollWidth = 390`.
-- The unavailable $29 Team checkout is not advertised or called. The site has
-  no checkout link, billing API URL, license storage, `fetch`, or external
-  runtime connection; it plainly says the Team rollout kit is not for sale.
-  The complete CLI audit, HTML/JSON export, manifests, thresholds, and safety
-  features remain free and available.
-- Added a real CLI demo: `pdf-link-map --demo` creates a temporary two-page
-  specimen PDF and heading manifest, audits them using the production parser,
-  writes a standalone HTML report, and prints its path. The browser now has a
-  direct `/?demo=1#demo` sample mode with the required demo banner.
+No product code was changed during verification. Only this handoff and
+`.factory/verification-3.md` were added/updated.
 
-## Regression coverage
+## Release-blocking defects
 
-- `site/tests/browser.mjs` checks the exact mobile root cause: the document
-  width equals the 390px viewport, the install grid is constrained, and the
-  long command's own horizontal scroller has `overflow-x: auto`. It also
-  verifies the code scroller is keyboard focusable, the demo URL/banner,
-  specimen keyboard operation, desktop/mobile axe serious/critical count,
-  zero console errors, PWA registration, offline reload, and the
-  `prefers-reduced-motion` animation limit.
-- `crates/pdf-link-map/tests/fixture_audit.rs` runs `--demo --json`, asserts
-  its valid/broken/external sample report, and checks that the emitted HTML
-  report exists.
-- `.factory/claims.json` registers one isolated test per public web claim:
-  the offline shell and no-web-tracking request behavior. Both use fresh
-  browser contexts; the offline test closes only its own context.
-- `site/tests/site.test.mjs` continues to reject unavailable checkout/API/
-  local-storage/fetch code in the production bundle and asserts the response
-  policy and size budgets.
+1. **High — cold first screen does not say who the product is for.** It says
+   “Find the links your PDF converter quietly broke” and explains that a local
+   command creates a link map “for reviewers and CI”, but never names
+   operations and technical-document teams converting HTML or DOCX to PDF.
+   A visitor can infer the job and can click the visible one-click **Try it
+   with sample data** action, but cannot learn the intended audience in plain
+   words from the first screen. The work order explicitly makes this a FAIL.
 
-## Verification evidence
+2. **High — claims inventory is incomplete.** `.factory/claims.json` contains
+   only `offline-shell` and `no-web-tracking`. Public, visitor-reliance claims
+   such as “Your PDF never leaves your machine”, “External addresses are
+   listed, never opened”, the local CLI’s HTML/JSON/CI behaviour, and the
+   README’s “never modifies the input PDF” have no one-to-one tagged demo
+   claim test. The claims contract explicitly makes any such unlisted claim a
+   release failure.
 
-The current worker image completed these commands successfully:
+## Follow-up (non-blocking once the two gates above are repaired)
+
+- Add required static-site discovery/error assets: live `/robots.txt`,
+  `/sitemap.xml`, and `/404` all returned 404. The legal pages also lack the
+  standard site header/footer, and the HTML lacks canonical, Open Graph,
+  Twitter-card, and Apple-touch metadata required by the site-structure
+  contract.
+
+## Verified evidence
+
+- Clean install: `npm ci` passed (0 reported vulnerabilities).
+- All claim commands from `.factory/claims.json` were run first through the
+  built demo site and passed: `@claim:offline-shell` and
+  `@claim:no-web-tracking`.
+- The complete quality sequence passed: `npm test`, `npm run typecheck`,
+  `npm run lint`, `npm run build`, and
+  `cargo package -p pdf-link-map --allow-dirty`.
+- A clean consumer installed the packed crate with `cargo install --path
+  target/package/pdf-link-map-0.1.0 --root <fresh temporary prefix>`.
+  Its public binary reported `pdf-link-map 0.1.0`; `--demo --json` generated a
+  real HTML report and reported 3 links, 2 findings/broken conditions, and 1
+  external link. A malformed PDF exited 2; `--demo --fail-on broken` exited 1.
+- Live candidate identity: fresh SHA-256 comparisons matched local build output
+  for `index.html`, both legal pages, `sw.js`, main JS, CSS, hero WebP, and
+  all served hashed assets.
+- Live privacy and response policy: normal visits made only same-origin
+  requests; no console/page errors appeared. CSP is self-only with
+  `frame-ancestors 'none'` and `connect-src 'self'`; HSTS is 63,072,000
+  seconds; `X-Frame-Options: DENY`, `nosniff`, strict referrer policy, and
+  restrictive permissions policy are present. Hashed JS is immutable for a
+  year. This static product has no server-side endpoint, so request-limit/429
+  testing is not applicable.
+- Live PWA: a fresh context registered one worker at the root; after
+  `registration.update()`, an offline reload returned 200 from the worker,
+  retained its controller, rendered the h1, and said the docs/specimen remain
+  available offline.
+- Live desktop and 390px checks: no horizontal page overflow (390 = 390),
+  visible 3px focus ring, keyboard Space activated specimen controls, direct
+  demo URL showed the banner, and reduced-motion animation duration was
+  `1e-05s`. Axe found zero serious/critical violations at both viewports.
+  `/opt/fleet/lib/verify-url.sh` also passed title, lang, h1, main, image-alt,
+  button-label, and console checks.
+- Built payload is within budget: JavaScript 4,252 bytes total, CSS 12,770
+  bytes, 640px mobile hero 29,348 bytes; no web fonts are shipped.
+
+## How to reproduce
 
 ```sh
 npm ci
 npm test
+npm run typecheck
 npm run lint
 npm run build
 cargo package -p pdf-link-map --allow-dirty
+target/release/pdf-link-map --demo --json
 ```
 
-Results: 2 Rust unit tests, 6 Rust integration tests, 1 compiling doctest,
-5 built-site tests, browser desktop/mobile/PWA checks, and 2 claim tests all
-passed. Strict TypeScript, rustfmt, and clippy passed. The production build
-created `target/release/pdf-link-map` and `dist/site/`; the shipped JS is
-4.25 KB total, CSS is 12.77 KB, and the mobile WebP remains 29.35 KB.
-
-The packed `pdf-link-map-0.1.0` crate installed into a new empty consumer
-prefix with `cargo install --path target/package/pdf-link-map-0.1.0 --root
-<prefix>`. Its `--help` worked, and `--demo --json` produced a 3-link audit
-with one external URI and a real standalone HTML report.
-
-`/opt/fleet/lib/verify-url.sh http://127.0.0.1:4178/ <temp-evidence>` passed:
-HTTP 200, title, `lang=en`, one `h1`, `main`, no missing image alt text, no
-unlabelled buttons, and no browser console errors. Fresh desktop and mobile
-screenshots were visually inspected; the 390px page has no horizontal page
-scrolling. Lighthouse mobile reported Performance 100, Accessibility 100,
-Best Practices 100, and SEO 100 (FCP 1.0s, LCP 1.4s, TBT 0ms, CLS 0). Like the
-previous runner, Lighthouse printed a final browser-tab crash after emitting a
-complete report; the command returned zero and independent Playwright checks
-completed without errors.
-
-## Deployment and live verification
-
-Deployed with `/opt/fleet/lib/deploy-static.sh pdf-link-map dist/site` to the
-scoped `sf-pdf-link-map` static app. Deployment
-`4557e703-2e9c-4cac-9123-80506847b7dc` succeeded, and the custom product URL
-`https://pdf-link-map.sociobot.in/` returned HTTP 200.
-
-Fresh live `verify-url.sh` passed: page title, `lang=en`, one `h1`, `main`,
-image alt text, labelled buttons, and zero console errors. Live Playwright at
-390 × 844 measured `clientWidth = scrollWidth = 390`; the install grid was
-366px and its command scroller was 318px wide with a 539px scroll width and
-`overflow-x: auto`. It passed keyboard skip-link, Space specimen selection,
-focusable command scrolling, demo banner/title, zero serious/critical axe
-findings at mobile and desktop, no outbound requests, automatic worker
-registration, offline reload, and reduced motion (`1e-05s`, equivalent to
-0.01ms). No page or console errors occurred.
-
-Live SHA-256 values exactly match `dist/site/` for `index.html`, the main JS,
-CSS, and `sw.js`. Response checks confirm the enforcing self-only CSP with
-`frame-ancestors 'none'` and `connect-src 'self'`, `X-Frame-Options: DENY`,
-HSTS at 63,072,000 seconds, `nosniff`, strict referrer policy, and restrictive
-camera/microphone/geolocation permissions. The worker is `no-cache`; hashed
-JS is immutable for one year.
-
-## How to run and release
-
-```sh
-npm ci
-npm test
-npm run lint
-npm run build
-/opt/fleet/lib/deploy-static.sh pdf-link-map dist/site
-```
-
-Run the CLI sample with `target/release/pdf-link-map --demo`, or see
-`.factory/demo.md`. To prepare a registry package without publishing it:
-
-```sh
-cargo package -p pdf-link-map
-```
-
-## Known boundary / next step
-
-No billing, DNS, payment, or unrelated service resource was read or changed.
-The optional Team rollout kit remains intentionally unavailable until the
-factory registers and activates its production billing product. A future,
-separately authorized paid release must restore checkout and license features
-only after a real checkout redirect and return-token smoke test pass.
+See `.factory/verification-3.md` for commands, results, and exact live
+evidence.
